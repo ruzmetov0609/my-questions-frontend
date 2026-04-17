@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Siyosat va Iqtisodiyot savollari - Admin Paneli</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; background:#f4f4f4; color:#333; }
+    header { background:#333; color:#fff; padding:1rem 0; text-align:center; }
+    header h1 { margin:0; font-size:1.6rem; }
+    nav { background:#444; padding:.4rem 0; text-align:center; }
+    nav a { color:#fff; text-decoration:none; padding:0 1rem; }
+    nav a:hover { text-decoration:underline; }
+
+    .container { width: 90%; max-width: 1000px; margin: 20px auto; background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.1); }
+
+    h2 { color:#333; border-bottom:1px solid #eee; padding-bottom:8px; margin-top:0; }
+
+    .question-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:16px; }
+    .question-card { border:1px solid #eee; padding:12px; border-radius:8px; background:#fff; }
+    .question-card h3 { margin:6px 0; color:#007bff; font-size:1.05rem; }
+    .question-card p { margin:6px 0; line-height:1.5; font-size:.95rem; color:#555; }
+    
+    /* Admin panel styling */
+    #adminPanel { margin-top:20px; }
+    .admin-section { margin-bottom:28px; padding:14px; border:1px solid #eee; border-radius:8px; background:#fff; }
+    .admin-section h2 { margin-top:0; }
+
+    label { display:block; margin:8px 0 4px; font-weight:bold; color:#555; }
+    input[type="text"], textarea, input[type="password"] { width:100%; padding:10px; border:1px solid #ddd; border-radius:4px; box-sizing:border-box; }
+    textarea { min-height:100px; resize:vertical; }
+
+    button { padding:10px 14px; border:0; border-radius:6px; cursor:pointer; }
+    .btn-primary { background:#28a745; color:#fff; }
+    .btn-secondary { background:#6c757d; color:#fff; }
+    .btn-danger { background:#dc3545; color:#fff; }
+    .btn-info { background:#007bff; color:#fff; }
+
+    table { width:100%; border-collapse: collapse; margin-top:12px; }
+    th, td { border:1px solid #ddd; padding:8px; text-align:left; }
+    th { background:#f5f5f5; color:#555; }
+
+    footer { text-align:center; padding:14px; background:#333; color:#fff; margin-top:20px; }
+    .hidden { display:none !important; }
+    .message { margin-top:10px; padding:10px; border-radius:5px; }
+    .message.error { background-color:#f8d7da; color:#721c24; border:1px solid #f5c6cb; }
+    .message.success { background-color:#d4edda; color:#155724; border:1px solid #c3e6cb; }
+
+    @media (max-width: 600px) {
+      .container { padding:12px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Savollar to'plami</h1>
+  </header>
+
+  <nav>
+    <a href="#savollar">Savollar</a>
+    <a href="#adminPanel">Admin Panel</a>
+  </nav>
+
+  <main class="container" id="content">
+    <section id="savollar">
+      <h2>So'nggi savollar</h2>
+      <div class="question-grid" id="questionGrid">
+        <!-- Savollar bu yerda JS orqali yuklanadi -->
+      </div>
+    </section>
+
+    <footer>
+      <p>&copy; 2026 Savollar to'plami. Barcha huquqlar himoyalangan.</p>
+    </footer>
+  </main>
+
+  <!-- Admin Panel -->
+  <section id="adminPanel" class="container" aria-label="AdminPanel">
+    <div class="admin-section">
+      <h2>Admin Kirish</h2>
+      <div id="authMessage" class="message hidden"></div>
+      <div id="loginForm">
+        <label for="adminSecret">Admin Secret:</label>
+        <input type="password" id="adminSecret" placeholder="Backenddagi ADMIN_SECRET" />
+        <button class="btn-info" id="loginBtn" style="margin-top:8px;">Kirish</button>
+      </div>
+      <div id="logoutArea" class="hidden" style="margin-top:8px;">
+        <span>Admin sifatida muvaffaqiyatli autentifikatsiya qilindingiz.</span>
+        <button class="btn-secondary" id="logoutBtn" style="margin-left:8px;">Chiqish</button>
+      </div>
+    </div>
+
+    <div id="adminActions" class="admin-section hidden" aria-label="QuestionManagement">
+      <h2>Yangi savol qo'shish</h2>
+      <div id="addQuestionMessage" class="message hidden"></div>
+      <form id="addQuestionForm">
+        <label for="questionTitle">Sarlavha:</label>
+        <input type="text" id="questionTitle" required />
+
+        <label for="questionCategory">Kategoriya:</label>
+        <input type="text" id="questionCategory" placeholder="Mantiq, Matematika, Umumiy bilimlar" required />
+
+        <label for="questionContent">Savol matni:</label>
+        <textarea id="questionContent" required></textarea>
+        
+        <button type="submit" class="btn-primary" id="addQuestionBtn" style="margin-top:6px;">Savolni qo'shish</button>
+      </form>
+
+      <h3 style="margin-top:20px;">Mavjud savollar</h3>
+      <div id="questionsListMessage" class="message hidden"></div>
+      <table id="questionsTable" aria-label="QuestionsTable">
+        <thead>
+          <tr>
+            <th>ID</th><th>Sarlavha</th><th>Kategoriya</th><th>Amallar</th>
+          </tr>
+        </thead>
+        <tbody id="questionsTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <script>
+    // --- Backend API URL (joylashtirilgandan so'ng yangilanadi) ---
+    // Backendni joylashtirganingizdan keyin Render.com (yoki boshqa hosting) sizga URL beradi.
+    // Masalan: https://your-backend-app.onrender.com
+    const BACKEND_API_URL = "https://savol-n9iu.onrender.com"; // Joylashtirmasdan oldin test qilish uchun
+    // Joylashtirilgandan so'ng: const BACKEND_API_URL = "https://your-backend-app.onrender.com/api";
+
+    // --- Frontend elementlari ---
+    const loginBtn = document.getElementById("loginBtn");
+    const adminSecretInput = document.getElementById("adminSecret");
+    const authMessage = document.getElementById("authMessage");
+    const loginForm = document.getElementById("loginForm");
+    const logoutArea = document.getElementById("logoutArea");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const adminActions = document.getElementById("adminActions");
+
+    const addQuestionForm = document.getElementById("addQuestionForm");
+    const addQuestionMessage = document.getElementById("addQuestionMessage");
+    const questionTitleInput = document.getElementById("questionTitle");
+    const questionCategoryInput = document.getElementById("questionCategory");
+    const questionContentInput = document.getElementById("questionContent");
+
+    const questionsTableBody = document.getElementById("questionsTableBody");
+    const questionsListMessage = document.getElementById("questionsListMessage");
+    const questionGrid = document.getElementById("questionGrid");
+
+    // --- Utility functions ---
+    function escapeHtml(str) {
+      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    function showMessage(element, message, type) {
+      element.textContent = message;
+      element.className = XXXINLINECODEXXX33XXXINLINECODEXXX;
+      element.classList.remove('hidden');
+      setTimeout(() => element.classList.add('hidden'), 5000);
+    }
+
+    function getAdminSecret() {
+      return localStorage.getItem("admin_secret_frontend");
+    }
+
+    function isLoggedIn() {
+      return !!getAdminSecret();
+    }
+
+    async function makeApiCall(method, endpoint, data = null) {
+      const secret = getAdminSecret();
+      if (!secret && endpoint !== '/auth') { // '/auth' endpointini tekshirish kerak emas
+        showMessage(authMessage, "Iltimos, avval admin secretni kiriting.", "error");
+        return null;
+      }
+
+      const options = {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Secret': secret // Backendga secretni yuborish
+        }
+      };
+      if (data) {
+        options.body = JSON.stringify(data);
+      }
+
+      try {
+        const response = await fetch(XXXINLINECODEXXX34XXXINLINECODEXXX, options);
+        if (response.status === 403) {
+            showMessage(authMessage, "Admin secret noto‘g‘ri. Iltimos, qaytadan kiriting.", "error");
+            logout();
+            return null;
+        }
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || XXXINLINECODEXXX35XXXINLINECODEXXX);
+        }
+        if (response.status === 204) return null; // No content for DELETE
+        return await response.json();
+      } catch (error) {
+        console.error("API xatosi:", error);
+        showMessage(authMessage, XXXINLINECODEXXX36XXXINLINECODEXXX, "error");
+        return null;
+      }
+    }
+
+    // --- Autentifikatsiya ---
+    function setLoggedInUI(loggedIn) {
+      if (loggedIn) {
+        loginForm.classList.add("hidden");
+        logoutArea.classList.remove("hidden");
+        adminActions.classList.remove("hidden");
+        adminSecretInput.value = ""; // Clear password after login
+        loadQuestionsForAdminPanel();
+      } else {
+        loginForm.classList.remove("hidden");
+        logoutArea.classList.add("hidden");
+        adminActions.classList.add("hidden");
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem("admin_secret_frontend");
+      setLoggedInUI(false);
+      showMessage(authMessage, "Siz tizimdan chiqdingiz.", "success");
+    }
+
+    loginBtn.addEventListener("click", () => {
+      const secret = adminSecretInput.value.trim();
+      if (secret) {
+        localStorage.setItem("admin_secret_frontend", secret);
+        setLoggedInUI(true);
+        showMessage(authMessage, "Muvaffaqiyatli kirildi!", "success");
+      } else {
+        showMessage(authMessage, "Iltimos, admin secretni kiriting.", "error");
+      }
+    });
+
+    logoutBtn.addEventListener("click", logout);
+
+    // --- Savollarni boshqarish (Admin panel) ---
+    async function loadQuestionsForAdminPanel() {
+      const questions = await makeApiCall('GET', '/questions');
+      if (questions) {
+        renderQuestionsTable(questions);
+        renderQuestionsForPublic(questions);
+      } else {
+        questionsListMessage.classList.remove('hidden');
+        questionsListMessage.textContent = "Savollarni yuklab bo'lmadi. Autentifikatsiya tekshiring.";
+        questionsListMessage.className = "message error";
+        questionsTableBody.innerHTML = '';
+      }
+    }
+
+    function renderQuestionsTable(questions) {
+      questionsTableBody.innerHTML = '';
+      if (questions.length === 0) {
+        questionsTableBody.innerHTML = '<tr><td colspan="4">Hech qanday savol yo‘q.</td></tr>';
+        return;
+      }
+      questions.forEach(q => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${q.id.substring(0, 8)}...</td>
+          <td>${escapeHtml(q.title)}</td>
+          <td>${escapeHtml(q.category)}</td>
+          <td>
+            <button class="btn-secondary" onclick="editQuestion('${q.id}')">Tahrirlash</button>
+            <button class="btn-danger" onclick="deleteQuestion('${q.id}')" style="margin-left:5px;">O'chirish</button>
+          </td>
+        `;
+        questionsTableBody.appendChild(tr);
+      });
+    }
+
+    addQuestionForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const title = questionTitleInput.value.trim();
+      const category = questionCategoryInput.value.trim();
+      const content = questionContentInput.value.trim();
+
+      if (!title || !category || !content) {
+        showMessage(addQuestionMessage, "Barcha maydonlar to'ldirilishi shart!", "error");
+        return;
+      }
+
+      const newQuestion = { title, category, content };
+      const result = await makeApiCall('POST', '/questions', newQuestion);
+      if (result) {
+        showMessage(addQuestionMessage, "Savol muvaffaqiyatli qo'shildi va Telegramga yuborildi!", "success");
+        questionTitleInput.value = "";
+        questionCategoryInput.value = "";
+        questionContentInput.value = "";
+        loadQuestionsForAdminPanel();
+      } else {
+        showMessage(addQuestionMessage, "Savolni qo'shishda xato yuz berdi.", "error");
+      }
+    });
+
+    window.editQuestion = async function(id) {
+      const questions = await makeApiCall('GET', '/questions');
+      const question = questions.find(q => q.id === id);
+      if (!question) {
+        alert("Savol topilmadi!");
+        return;
+      }
+
+      const newTitle = prompt("Yangi sarlavha:", question.title);
+      if (newTitle === null) return;
+      const newCategory = prompt("Yangi kategoriya:", question.category);
+      if (newCategory === null) return;
+      const newContent = prompt("Yangi savol matni:", question.content);
+      if (newContent === null) return;
+
+      const updated = await makeApiCall('PUT', XXXINLINECODEXXX37XXXINLINECODEXXX, {
+        title: newTitle.trim(),
+        category: newCategory.trim(),
+        content: newContent.trim()
+      });
+      if (updated) {
+        alert("Savol muvaffaqiyatli tahrirlandi!");
+        loadQuestionsForAdminPanel();
+      } else {
+        alert("Savolni tahrirlashda xato yuz berdi.");
+      }
+    };
+
+    window.deleteQuestion = async function(id) {
+      if (!confirm("Haqiqatan ham bu savolni o'chirmoqchimisiz?")) return;
+
+      const result = await makeApiCall('DELETE', XXXINLINECODEXXX38XXXINLINECODEXXX);
+      if (result === null) { // DELETE returns 204 No Content
+        alert("Savol muvaffaqiyatli o'chirildi!");
+        loadQuestionsForAdminPanel();
+      } else {
+        alert("Savolni o'chirishda xato yuz berdi.");
+      }
+    };
+
+    // --- Ommaviy savollarni ko'rsatish ---
+    function renderQuestionsForPublic(questions) {
+      questionGrid.innerHTML = '';
+      if (questions.length === 0) {
+        questionGrid.innerHTML = '<p>Hozircha hech qanday savol yo‘q.</p>';
+        return;
+      }
+      questions.forEach(q => {
+        const card = document.createElement("div");
+        card.className = "question-card";
+        card.innerHTML = `
+          <h3>${escapeHtml(q.title)}</h3>
+          <p style="color:#555; font-size:.9em"><strong>${escapeHtml(q.category)}</strong></p>
+          <p>${escapeHtml(q.content)}</p>
+        `;
+        questionGrid.appendChild(card);
+      });
+    }
+
+    // --- Init: Sahifa yuklanganda ---
+    document.addEventListener("DOMContentLoaded", () => {
+      setLoggedInUI(isLoggedIn());
+      if (isLoggedIn()) {
+        loadQuestionsForAdminPanel();
+      } else {
+        // Hamma uchun ochiq savollarni yuklash (faqat admin secretni kiritmagan bo'lsa)
+        // Shuningdek, bu qism backend GET /api/questions ro'yxatini ADMIN_SECRET talab qilmasdan
+        // ochiq qilishni talab qilishi mumkin. Hozircha login bo'lmasa ommaviy yuklanmaydi.
+        // Agar ommaviy savollar ham bo'lishini xohlasangiz, backendda barcha savollarni
+        // qaytaruvchi public endpoint yaratish kerak bo'ladi.
+        questionGrid.innerHTML = '<p>Barcha savollarni ko‘rish uchun admin panelga kirishingiz shart. Yoki backendda public API endpoint yaratish kerak.</p>';
+      }
+    });
+
+  </script>
+</body>
+</html>
