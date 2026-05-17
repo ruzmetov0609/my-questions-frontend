@@ -3,373 +3,431 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Siyosat va Iqtisodiyot savollari - Admin Paneli</title>
+  <title>Savollar Test Tizimi (DB bilan)</title>
   <style>
-    body { font-family: Arial, sans-serif; margin:0; background:#f4f4f4; color:#333; }
-    header { background:#333; color:#fff; padding:1rem 0; text-align:center; }
-    header h1 { margin:0; font-size:1.6rem; }
-    nav { background:#444; padding:.4rem 0; text-align:center; }
-    nav a { color:#fff; text-decoration:none; padding:0 1rem; }
-    nav a:hover { text-decoration:underline; }
-
-    .container { width: 90%; max-width: 1000px; margin: 20px auto; background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.1); }
-
-    h2 { color:#333; border-bottom:1px solid #eee; padding-bottom:8px; margin-top:0; }
-
-    .question-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:16px; }
-    .question-card { border:1px solid #eee; padding:12px; border-radius:8px; background:#fff; }
-    .question-card h3 { margin:6px 0; color:#007bff; font-size:1.05rem; }
-    .question-card p { margin:6px 0; line-height:1.5; font-size:.95rem; color:#555; }
-    
-    /* Admin panel styling */
-    #adminPanel { margin-top:20px; }
-    .admin-section { margin-bottom:28px; padding:14px; border:1px solid #eee; border-radius:8px; background:#fff; }
-    .admin-section h2 { margin-top:0; }
-
-    label { display:block; margin:8px 0 4px; font-weight:bold; color:#555; }
-    input[type="text"], textarea, input[type="password"] { width:100%; padding:10px; border:1px solid #ddd; border-radius:4px; box-sizing:border-box; }
-    textarea { min-height:100px; resize:vertical; }
-
-    button { padding:10px 14px; border:0; border-radius:6px; cursor:pointer; }
-    .btn-primary { background:#28a745; color:#fff; }
-    .btn-secondary { background:#6c757d; color:#fff; }
-    .btn-danger { background:#dc3545; color:#fff; }
-    .btn-info { background:#007bff; color:#fff; }
-
-    table { width:100%; border-collapse: collapse; margin-top:12px; }
-    th, td { border:1px solid #ddd; padding:8px; text-align:left; }
-    th { background:#f5f5f5; color:#555; }
-
-    footer { text-align:center; padding:14px; background:#333; color:#fff; margin-top:20px; }
-    .hidden { display:none !important; }
-    .message { margin-top:10px; padding:10px; border-radius:5px; }
-    .message.error { background-color:#f8d7da; color:#721c24; border:1px solid #f5c6cb; }
-    .message.success { background-color:#d4edda; color:#155724; border:1px solid #c3e6cb; }
-
-    @media (max-width: 600px) {
-      .container { padding:12px; }
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --secondary: #64748b;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     }
+
+    * { box-sizing: border-box; outline: none; }
+    body { font-family: 'Segoe UI', sans-serif; margin:0; background:var(--bg); color:var(--text-main); line-height:1.6; }
+
+    header { background:var(--card-bg); border-bottom:1px solid var(--border); padding:1rem 0; position:sticky; top:0; z-index:100; }
+    .container { width: 90%; max-width: 1200px; margin: 0 auto; }
+    .header-content { display:flex; justify-content:space-between; align-items:center; }
+    h1 { margin:0; font-size:1.5rem; color:var(--primary); display:flex; align-items:center; gap:10px; }
+    
+    nav a { color:var(--text-muted); text-decoration:none; margin-left:20px; font-weight:500; cursor:pointer; }
+    nav a:hover, nav a.active { color:var(--primary); }
+
+    .btn { padding:10px 20px; border:0; border-radius:6px; cursor:pointer; font-size:0.95rem; transition:all 0.2s; font-weight:500; display:inline-flex; align-items:center; gap:8px;}
+    .btn-primary { background:var(--primary); color:#fff; }
+    .btn-primary:hover { background:var(--primary-dark); }
+    .btn-secondary { background:var(--secondary); color:#fff; }
+    .btn-danger { background:var(--danger); color:#fff; }
+    .btn-outline { background:transparent; border:1px solid var(--border); color:var(--text-main); }
+    .btn-block { width:100%; }
+
+    main { padding: 2rem 0; min-height: 80vh; }
+    .section-title { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; border-bottom:2px solid var(--border); padding-bottom:0.5rem; }
+    .hidden { display:none !important; }
+
+    /* Test Styles */
+    #testInterface { max-width:800px; margin:0 auto; background:var(--card-bg); padding:40px; border-radius:16px; box-shadow:var(--shadow); text-align:center; }
+    .test-progress { width:100%; background:#e2e8f0; height:8px; border-radius:4px; margin-bottom:30px; overflow:hidden; }
+    .test-progress-bar { height:100%; background:var(--primary); width:0%; transition:width 0.3s ease; }
+    .test-question-text { font-size:1.4rem; font-weight:600; margin:30px 0; min-height:100px; display:flex; align-items:center; justify-content:center; }
+    .batch-selector { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:20px; }
+    .batch-btn { padding:10px 15px; border:1px solid var(--border); background:#fff; border-radius:8px; cursor:pointer; }
+    .batch-btn:hover, .batch-btn.active { border-color:var(--primary); background:#eff6ff; color:var(--primary); font-weight:600; }
+
+    /* Admin & Grid */
+    .question-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:20px; }
+    .question-card { background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:20px; }
+    .badge { display:inline-block; padding:4px 10px; border-radius:20px; font-size:0.75rem; background:#e0f2fe; color:var(--primary); margin-bottom:10px; font-weight:600; }
+    
+    table { width:100%; border-collapse: collapse; background:var(--card-bg); border-radius:8px; overflow:hidden; }
+    th, td { padding:12px 15px; text-align:left; border-bottom:1px solid var(--border); }
+    th { background:#f1f5f9; }
+
+    /* Modal */
+    .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:1000; opacity:0; visibility:hidden; transition:all 0.3s; }
+    .modal-overlay.open { opacity:1; visibility:visible; }
+    .modal { background:var(--card-bg); padding:25px; border-radius:12px; width:100%; max-width:600px; max-height:90vh; overflow-y:auto;}
+    .form-group { margin-bottom:15px; }
+    .form-group label { display:block; margin-bottom:8px; font-weight:600; font-size:0.9rem; }
+    .form-group input, .form-group textarea, .form-group select { width:100%; padding:10px; border:1px solid var(--border); border-radius:6px; }
+    .file-upload-area { border:2px dashed var(--border); padding:20px; text-align:center; border-radius:8px; margin-bottom:15px; background:#f8fafc; }
+
+    /* Toast */
+    #toast-container { position:fixed; bottom:20px; right:20px; z-index:2000; display:flex; flex-direction:column; gap:10px; }
+    .toast { padding:12px 20px; border-radius:6px; color:#fff; box-shadow:0 4px 6px rgba(0,0,0,0.1); animation: slideIn 0.3s ease; min-width:250px; }
+    .toast.success { background:var(--success); }
+    .toast.error { background:var(--danger); }
   </style>
 </head>
 <body>
+
   <header>
-    <h1>Savollar to'plami</h1>
+    <div class="container header-content">
+      <h1>🗄️ Test Tizimi (DB)</h1>
+      <nav>
+        <a id="navTest" onclick="switchView('test')" class="active">Test</a>
+        <a id="navPublic" onclick="switchView('public')">Savollar</a>
+        <a id="navAdmin" onclick="switchView('admin')">Admin</a>
+      </nav>
+    </div>
   </header>
 
-  <nav>
-    <a href="#savollar">Savollar</a>
-    <a href="#adminPanel">Admin Panel</a>
-  </nav>
+  <main class="container">
+    
+    <!-- TEST VIEW -->
+    <section id="testView">
+      <div class="section-title"><h2>Test Rejimi</h2></div>
+      <div id="testSetup">
+        <div class="form-group">
+          <label>Kategoriya:</label>
+          <select id="testCategorySelect" style="width:100%; padding:10px;">
+            <option value="all">Barchasi</option>
+          </select>
+        </div>
+        <label>Qismni tanlang:</label>
+        <div id="batchContainer" class="batch-selector"></div>
+        <button class="btn btn-primary" onclick="startTest()">Testni Boshlash</button>
+      </div>
 
-  <main class="container" id="content">
-    <section id="savollar">
-      <h2>So'nggi savollar</h2>
-      <div class="question-grid" id="questionGrid">
-        <!-- Savollar bu yerda JS orqali yuklanadi -->
+      <div id="activeTest" class="hidden">
+        <div class="test-progress"><div id="progressBar" class="test-progress-bar"></div></div>
+        <div class="test-question-text" id="currentQuestionText"></div>
+        <div class="test-controls" style="display:flex; justify-content:space-between; margin-top:30px;">
+          <button class="btn btn-secondary" onclick="prevQuestion()">Orqaga</button>
+          <button class="btn btn-primary" onclick="nextQuestion()">Keyingi</button>
+        </div>
       </div>
     </section>
 
-    <footer>
-      <p>&copy; 2026 Savollar to'plami. Barcha huquqlar himoyalangan.</p>
-    </footer>
+    <!-- PUBLIC VIEW -->
+    <section id="publicView" class="hidden">
+      <div class="section-title"><h2>Barcha Savollar</h2></div>
+      <div class="question-grid" id="publicQuestionGrid"></div>
+    </section>
+
+    <!-- ADMIN VIEW -->
+    <section id="adminView" class="hidden">
+      <div class="section-title">
+        <h2>Admin Panel</h2>
+        <button class="btn btn-primary" onclick="openAddModal()">+ Savol Qo'shish</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Mazmun</th>
+              <th>Kategoriya</th>
+              <th>Qism</th>
+              <th>Amallar</th>
+            </tr>
+          </thead>
+          <tbody id="adminTableBody"></tbody>
+        </table>
+      </div>
+    </section>
   </main>
 
-  <!-- Admin Panel -->
-  <section id="adminPanel" class="container" aria-label="AdminPanel">
-    <div class="admin-section">
-      <h2>Admin Kirish</h2>
-      <div id="authMessage" class="message hidden"></div>
-      <div id="loginForm">
-        <label for="adminSecret">Admin Secret:</label>
-        <input type="password" id="adminSecret" placeholder="Backenddagi ADMIN_SECRET" />
-        <button class="btn-info" id="loginBtn" style="margin-top:8px;">Kirish</button>
+  <!-- MODAL ADD -->
+  <div id="questionModal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header" style="display:flex; justify-content:space-between; margin-bottom:15px;">
+        <h3>Savol Qo'shish</h3>
+        <button onclick="closeModal('questionModal')" style="border:none;background:none;cursor:pointer;font-size:1.5rem;">&times;</button>
       </div>
-      <div id="logoutArea" class="hidden" style="margin-top:8px;">
-        <span>Admin sifatida muvaffaqiyatli autentifikatsiya qilindingiz.</span>
-        <button class="btn-secondary" id="logoutBtn" style="margin-left:8px;">Chiqish</button>
+      
+      <div style="display:flex; gap:10px; margin-bottom:15px;">
+        <button class="btn btn-sm btn-outline" onclick="toggleMode('single')" id="btnSingle">Bitta</button>
+        <button class="btn btn-sm btn-outline" onclick="toggleMode('file')" id="btnFile">TXT Yuklash</button>
       </div>
-    </div>
 
-    <div id="adminActions" class="admin-section hidden" aria-label="QuestionManagement">
-      <h2>Yangi savol qo'shish</h2>
-      <div id="addQuestionMessage" class="message hidden"></div>
-      <form id="addQuestionForm">
-        <label for="questionTitle">Sarlavha:</label>
-        <input type="text" id="questionTitle" required />
-
-        <label for="questionCategory">Kategoriya:</label>
-        <input type="text" id="questionCategory" placeholder="Mantiq, Matematika, Umumiy bilimlar" required />
-
-        <label for="questionContent">Savol matni:</label>
-        <textarea id="questionContent" required></textarea>
-        
-        <button type="submit" class="btn-primary" id="addQuestionBtn" style="margin-top:6px;">Savolni qo'shish</button>
+      <!-- Single Form -->
+      <form id="singleForm" onsubmit="handleSingleSubmit(event)">
+        <div class="form-group">
+          <label>Savol matni</label>
+          <textarea id="qContentSingle" required></textarea>
+        </div>
+        <div class="form-group">
+          <label>Kategoriya</label>
+          <select id="qCategorySingle" required>
+            <option value="Siyosat">Siyosat</option>
+            <option value="Iqtisodiyot">Iqtisodiyot</option>
+            <option value="Mantiq">Mantiq</option>
+            <option value="Umumiy">Umumiy</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Saqlash</button>
       </form>
 
-      <h3 style="margin-top:20px;">Mavjud savollar</h3>
-      <div id="questionsListMessage" class="message hidden"></div>
-      <table id="questionsTable" aria-label="QuestionsTable">
-        <thead>
-          <tr>
-            <th>ID</th><th>Sarlavha</th><th>Kategoriya</th><th>Amallar</th>
-          </tr>
-        </thead>
-        <tbody id="questionsTableBody"></tbody>
-      </table>
+      <!-- File Form -->
+      <form id="fileForm" class="hidden" onsubmit="handleFileSubmit(event)">
+        <div class="form-group">
+          <label>TXT Fayl</label>
+          <div class="file-upload-area">
+            <input type="file" id="txtFileInput" accept=".txt" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Kategoriya</label>
+          <select id="qCategoryFile" required>
+            <option value="Siyosat">Siyosat</option>
+            <option value="Iqtisodiyot">Iqtisodiyot</option>
+            <option value="Mantiq">Mantiq</option>
+            <option value="Umumiy">Umumiy</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Yuklash</button>
+      </form>
     </div>
-  </section>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
 
   <script>
-    // --- Backend API URL (joylashtirilgandan so'ng yangilanadi) ---
-    // Backendni joylashtirganingizdan keyin Render.com (yoki boshqa hosting) sizga URL beradi.
-    // Masalan: https://your-backend-app.onrender.com
-    const BACKEND_API_URL = "https://savol-n9iu.onrender.com"; // Joylashtirmasdan oldin test qilish uchun
-    // Joylashtirilgandan so'ng: const BACKEND_API_URL = "https://your-backend-app.onrender.com/api";
+    // Backend manzili
+    const API_URL = "http://localhost:3000/api"; 
+    const BATCH_SIZE = 30;
 
-    // --- Frontend elementlari ---
-    const loginBtn = document.getElementById("loginBtn");
-    const adminSecretInput = document.getElementById("adminSecret");
-    const authMessage = document.getElementById("authMessage");
-    const loginForm = document.getElementById("loginForm");
-    const logoutArea = document.getElementById("logoutArea");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const adminActions = document.getElementById("adminActions");
+    let state = {
+      questions: [], // Serverdan kelgan ma'lumotlar
+      currentTest: { questions: [], currentIndex: 0, activeBatch: 1 }
+    };
 
-    const addQuestionForm = document.getElementById("addQuestionForm");
-    const addQuestionMessage = document.getElementById("addQuestionMessage");
-    const questionTitleInput = document.getElementById("questionTitle");
-    const questionCategoryInput = document.getElementById("questionCategory");
-    const questionContentInput = document.getElementById("questionContent");
-
-    const questionsTableBody = document.getElementById("questionsTableBody");
-    const questionsListMessage = document.getElementById("questionsListMessage");
-    const questionGrid = document.getElementById("questionGrid");
-
-    // --- Utility functions ---
-    function escapeHtml(str) {
-      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-    }
-
-    function showMessage(element, message, type) {
-      element.textContent = message;
-      element.className = XXXINLINECODEXXX33XXXINLINECODEXXX;
-      element.classList.remove('hidden');
-      setTimeout(() => element.classList.add('hidden'), 5000);
-    }
-
-    function getAdminSecret() {
-      return localStorage.getItem("admin_secret_frontend");
-    }
-
-    function isLoggedIn() {
-      return !!getAdminSecret();
-    }
-
-    async function makeApiCall(method, endpoint, data = null) {
-      const secret = getAdminSecret();
-      if (!secret && endpoint !== '/auth') { // '/auth' endpointini tekshirish kerak emas
-        showMessage(authMessage, "Iltimos, avval admin secretni kiriting.", "error");
-        return null;
-      }
-
-      const options = {
-        method: method,
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Admin-Secret': secret // Backendga secretni yuborish
-        }
-      };
-      if (data) {
-        options.body = JSON.stringify(data);
-      }
-
-      try {
-        const response = await fetch(XXXINLINECODEXXX34XXXINLINECODEXXX, options);
-        if (response.status === 403) {
-            showMessage(authMessage, "Admin secret noto‘g‘ri. Iltimos, qaytadan kiriting.", "error");
-            logout();
-            return null;
-        }
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || XXXINLINECODEXXX35XXXINLINECODEXXX);
-        }
-        if (response.status === 204) return null; // No content for DELETE
-        return await response.json();
-      } catch (error) {
-        console.error("API xatosi:", error);
-        showMessage(authMessage, XXXINLINECODEXXX36XXXINLINECODEXXX, "error");
-        return null;
-      }
-    }
-
-    // --- Autentifikatsiya ---
-    function setLoggedInUI(loggedIn) {
-      if (loggedIn) {
-        loginForm.classList.add("hidden");
-        logoutArea.classList.remove("hidden");
-        adminActions.classList.remove("hidden");
-        adminSecretInput.value = ""; // Clear password after login
-        loadQuestionsForAdminPanel();
-      } else {
-        loginForm.classList.remove("hidden");
-        logoutArea.classList.add("hidden");
-        adminActions.classList.add("hidden");
-      }
-    }
-
-    function logout() {
-      localStorage.removeItem("admin_secret_frontend");
-      setLoggedInUI(false);
-      showMessage(authMessage, "Siz tizimdan chiqdingiz.", "success");
-    }
-
-    loginBtn.addEventListener("click", () => {
-      const secret = adminSecretInput.value.trim();
-      if (secret) {
-        localStorage.setItem("admin_secret_frontend", secret);
-        setLoggedInUI(true);
-        showMessage(authMessage, "Muvaffaqiyatli kirildi!", "success");
-      } else {
-        showMessage(authMessage, "Iltimos, admin secretni kiriting.", "error");
-      }
+    // --- INIT ---
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchQuestions();
     });
 
-    logoutBtn.addEventListener("click", logout);
-
-    // --- Savollarni boshqarish (Admin panel) ---
-    async function loadQuestionsForAdminPanel() {
-      const questions = await makeApiCall('GET', '/questions');
-      if (questions) {
-        renderQuestionsTable(questions);
-        renderQuestionsForPublic(questions);
-      } else {
-        questionsListMessage.classList.remove('hidden');
-        questionsListMessage.textContent = "Savollarni yuklab bo'lmadi. Autentifikatsiya tekshiring.";
-        questionsListMessage.className = "message error";
-        questionsTableBody.innerHTML = '';
+    // --- API CALLS (Backend bilan ishlash) ---
+    async function fetchQuestions() {
+      try {
+        const res = await fetch(`${API_URL}/questions`);
+        if (!res.ok) throw new Error("Server xatosi");
+        state.questions = await res.json();
+        renderAll();
+        updateTestCategoryOptions();
+        setupBatches();
+      } catch (err) {
+        console.error(err);
+        showToast("Ma'lumotlarni yuklab bo'lmadi. Server ishlayaptimi?", "error");
       }
     }
 
-    function renderQuestionsTable(questions) {
-      questionsTableBody.innerHTML = '';
-      if (questions.length === 0) {
-        questionsTableBody.innerHTML = '<tr><td colspan="4">Hech qanday savol yo‘q.</td></tr>';
-        return;
+    async function addQuestionToDB(data) {
+      try {
+        const res = await fetch(`${API_URL}/questions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if (res.ok) {
+          showToast("Savol qo'shildi!", "success");
+          fetchQuestions(); // Ro'yxatni yangilash
+        } else {
+          showToast("Xatolik yuz berdi", "error");
+        }
+      } catch (err) {
+        showToast("Serverga ulanib bo'lmadi", "error");
       }
-      questions.forEach(q => {
-        const tr = document.createElement("tr");
+    }
+
+    async function addBulkQuestionsToDB(questionsArray) {
+      try {
+        const res = await fetch(`${API_URL}/questions/bulk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ questions: questionsArray })
+        });
+        if (res.ok) {
+          const result = await res.json();
+          showToast(result.message, "success");
+          fetchQuestions();
+        } else {
+          showToast("Xatolik yuz berdi", "error");
+        }
+      } catch (err) {
+        showToast("Serverga ulanib bo'lmadi", "error");
+      }
+    }
+
+    async function deleteQuestionFromDB(id) {
+      if (!confirm("O'chirasizmi?")) return;
+      try {
+        await fetch(`${API_URL}/questions/${id}`, { method: 'DELETE' });
+        showToast("O'chirildi", "success");
+        fetchQuestions();
+      } catch (err) {
+        showToast("Xatolik", "error");
+      }
+    }
+
+    // --- UI FUNCTIONS ---
+    function renderAll() {
+      renderPublicGrid();
+      renderAdminTable();
+    }
+
+    function renderPublicGrid() {
+      const grid = document.getElementById('publicQuestionGrid');
+      grid.innerHTML = '';
+      state.questions.forEach(q => {
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        card.innerHTML = `<span class="badge">${q.category}</span><h3>Qism: ${q.batchId}</h3><p>${escapeHtml(q.content)}</p>`;
+        grid.appendChild(card);
+      });
+    }
+
+    function renderAdminTable() {
+      const tbody = document.getElementById('adminTableBody');
+      tbody.innerHTML = '';
+      state.questions.forEach(q => {
+        const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${q.id.substring(0, 8)}...</td>
-          <td>${escapeHtml(q.title)}</td>
-          <td>${escapeHtml(q.category)}</td>
+          <td>${escapeHtml(q.content.substring(0, 50))}...</td>
+          <td><span class="badge">${q.category}</span></td>
+          <td>Qism ${q.batchId}</td>
           <td>
-            <button class="btn-secondary" onclick="editQuestion('${q.id}')">Tahrirlash</button>
-            <button class="btn-danger" onclick="deleteQuestion('${q.id}')" style="margin-left:5px;">O'chirish</button>
+             <button class="btn btn-sm btn-danger" onclick="deleteQuestionFromDB('${q._id}')">O'chirish</button>
           </td>
         `;
-        questionsTableBody.appendChild(tr);
+        tbody.appendChild(tr);
       });
     }
 
-    addQuestionForm.addEventListener("submit", async (e) => {
+    // --- TEST LOGIC ---
+    function updateTestCategoryOptions() {
+      const select = document.getElementById('testCategorySelect');
+      const cats = [...new Set(state.questions.map(q => q.category))];
+      select.innerHTML = '<option value="all">Barchasi</option>' + 
+                        cats.map(c => `<option value="${c}">${c}</option>`).join('');
+    }
+
+    function setupBatches() {
+      const container = document.getElementById('batchContainer');
+      container.innerHTML = '';
+      const maxBatch = state.questions.length > 0 ? Math.max(...state.questions.map(q => q.batchId)) : 1;
+      
+      for(let i=1; i<=maxBatch; i++) {
+        const btn = document.createElement('div');
+        btn.className = 'batch-btn';
+        btn.textContent = `Qism ${i}`;
+        btn.onclick = () => { 
+          document.querySelectorAll('.batch-btn').forEach(b => b.classList.remove('active')); 
+          btn.classList.add('active'); 
+          state.currentTest.activeBatch = i; 
+        };
+        if(i === 1) btn.classList.add('active');
+        container.appendChild(btn);
+      }
+    }
+
+    function startTest() {
+      const cat = document.getElementById('testCategorySelect').value;
+      let filtered = state.questions.filter(q => cat === 'all' || q.category === cat);
+      filtered.sort((a,b) => a.createdAt - b.createdAt); // Ketma-ket
+
+      // Partlarga ajratish
+      const start = (state.currentTest.activeBatch - 1) * BATCH_SIZE;
+      const end = start + BATCH_SIZE;
+      state.currentTest.questions = filtered.slice(start, end);
+      state.currentTest.currentIndex = 0;
+
+      if (state.currentTest.questions.length === 0) return showToast("Bu qismda savol yo'q", "error");
+
+      document.getElementById('testSetup').classList.add('hidden');
+      document.getElementById('activeTest').classList.remove('hidden');
+      renderTestQuestion();
+    }
+
+    function renderTestQuestion() {
+      const test = state.currentTest;
+      if (test.currentIndex >= test.questions.length) {
+        document.getElementById('activeTest').classList.add('hidden');
+        document.getElementById('testSetup').classList.remove('hidden');
+        return showToast("Test tugadi!", "success");
+      }
+      const q = test.questions[test.currentIndex];
+      document.getElementById('currentQuestionText').textContent = q.content;
+      const progress = ((test.currentIndex + 1) / test.questions.length) * 100;
+      document.getElementById('progressBar').style.width = `${progress}%`;
+    }
+
+    function nextQuestion() { state.currentTest.currentIndex++; renderTestQuestion(); }
+    function prevQuestion() { if(state.currentTest.currentIndex > 0) { state.currentTest.currentIndex--; renderTestQuestion(); } }
+
+    // --- UPLOAD LOGIC ---
+    function toggleMode(mode) {
+      if(mode === 'single') {
+        document.getElementById('singleForm').classList.remove('hidden');
+        document.getElementById('fileForm').classList.add('hidden');
+      } else {
+        document.getElementById('singleForm').classList.add('hidden');
+        document.getElementById('fileForm').classList.remove('hidden');
+      }
+    }
+
+    function handleSingleSubmit(e) {
       e.preventDefault();
-      const title = questionTitleInput.value.trim();
-      const category = questionCategoryInput.value.trim();
-      const content = questionContentInput.value.trim();
-
-      if (!title || !category || !content) {
-        showMessage(addQuestionMessage, "Barcha maydonlar to'ldirilishi shart!", "error");
-        return;
-      }
-
-      const newQuestion = { title, category, content };
-      const result = await makeApiCall('POST', '/questions', newQuestion);
-      if (result) {
-        showMessage(addQuestionMessage, "Savol muvaffaqiyatli qo'shildi va Telegramga yuborildi!", "success");
-        questionTitleInput.value = "";
-        questionCategoryInput.value = "";
-        questionContentInput.value = "";
-        loadQuestionsForAdminPanel();
-      } else {
-        showMessage(addQuestionMessage, "Savolni qo'shishda xato yuz berdi.", "error");
-      }
-    });
-
-    window.editQuestion = async function(id) {
-      const questions = await makeApiCall('GET', '/questions');
-      const question = questions.find(q => q.id === id);
-      if (!question) {
-        alert("Savol topilmadi!");
-        return;
-      }
-
-      const newTitle = prompt("Yangi sarlavha:", question.title);
-      if (newTitle === null) return;
-      const newCategory = prompt("Yangi kategoriya:", question.category);
-      if (newCategory === null) return;
-      const newContent = prompt("Yangi savol matni:", question.content);
-      if (newContent === null) return;
-
-      const updated = await makeApiCall('PUT', XXXINLINECODEXXX37XXXINLINECODEXXX, {
-        title: newTitle.trim(),
-        category: newCategory.trim(),
-        content: newContent.trim()
-      });
-      if (updated) {
-        alert("Savol muvaffaqiyatli tahrirlandi!");
-        loadQuestionsForAdminPanel();
-      } else {
-        alert("Savolni tahrirlashda xato yuz berdi.");
-      }
-    };
-
-    window.deleteQuestion = async function(id) {
-      if (!confirm("Haqiqatan ham bu savolni o'chirmoqchimisiz?")) return;
-
-      const result = await makeApiCall('DELETE', XXXINLINECODEXXX38XXXINLINECODEXXX);
-      if (result === null) { // DELETE returns 204 No Content
-        alert("Savol muvaffaqiyatli o'chirildi!");
-        loadQuestionsForAdminPanel();
-      } else {
-        alert("Savolni o'chirishda xato yuz berdi.");
-      }
-    };
-
-    // --- Ommaviy savollarni ko'rsatish ---
-    function renderQuestionsForPublic(questions) {
-      questionGrid.innerHTML = '';
-      if (questions.length === 0) {
-        questionGrid.innerHTML = '<p>Hozircha hech qanday savol yo‘q.</p>';
-        return;
-      }
-      questions.forEach(q => {
-        const card = document.createElement("div");
-        card.className = "question-card";
-        card.innerHTML = `
-          <h3>${escapeHtml(q.title)}</h3>
-          <p style="color:#555; font-size:.9em"><strong>${escapeHtml(q.category)}</strong></p>
-          <p>${escapeHtml(q.content)}</p>
-        `;
-        questionGrid.appendChild(card);
-      });
+      const data = {
+        content: document.getElementById('qContentSingle').value,
+        category: document.getElementById('qCategorySingle').value
+      };
+      addQuestionToDB(data);
+      closeModal('questionModal');
+      document.getElementById('qContentSingle').value = '';
     }
 
-    // --- Init: Sahifa yuklanganda ---
-    document.addEventListener("DOMContentLoaded", () => {
-      setLoggedInUI(isLoggedIn());
-      if (isLoggedIn()) {
-        loadQuestionsForAdminPanel();
-      } else {
-        // Hamma uchun ochiq savollarni yuklash (faqat admin secretni kiritmagan bo'lsa)
-        // Shuningdek, bu qism backend GET /api/questions ro'yxatini ADMIN_SECRET talab qilmasdan
-        // ochiq qilishni talab qilishi mumkin. Hozircha login bo'lmasa ommaviy yuklanmaydi.
-        // Agar ommaviy savollar ham bo'lishini xohlasangiz, backendda barcha savollarni
-        // qaytaruvchi public endpoint yaratish kerak bo'ladi.
-        questionGrid.innerHTML = '<p>Barcha savollarni ko‘rish uchun admin panelga kirishingiz shart. Yoki backendda public API endpoint yaratish kerak.</p>';
-      }
-    });
+    function handleFileSubmit(e) {
+      e.preventDefault();
+      const file = document.getElementById('txtFileInput').files[0];
+      const category = document.getElementById('qCategoryFile').value;
+      
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        const lines = ev.target.result.split(/\r?\n/).map(l => l.trim()).filter(l => l);
+        const questions = lines.map(content => ({ content, category }));
+        addBulkQuestionsToDB(questions);
+        closeModal('questionModal');
+        document.getElementById('txtFileInput').value = '';
+      };
+      reader.readAsText(file);
+    }
 
+    // --- UTILS ---
+    function switchView(v) {
+      ['testView', 'publicView', 'adminView'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      document.getElementById(v + 'View').classList.remove('hidden');
+      document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+      document.getElementById('nav' + v.charAt(0).toUpperCase() + v.slice(1)).classList.add('active');
+    }
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+    function showToast(msg, type) {
+      const t = document.createElement('div');
+      t.className = `toast ${type}`; t.textContent = msg;
+      document.getElementById('toast-container').appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    }
+    function escapeHtml(t) { return t ? t.replace(/</g,"&lt;").replace(/>/g,"&gt;") : ""; }
   </script>
 </body>
 </html>
